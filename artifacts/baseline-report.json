@@ -1,0 +1,27 @@
+{
+  "dataOrigin": "AUTHORED_SYNTHETIC",
+  "description": "Format example only; not measured performance or a previous project run.",
+  "backendType": "synthetic-example",
+  "environment": "test",
+  "timestamp": null,
+  "configuration": {
+    "sparseIndexer": "synthetic BM25 example",
+    "denseIndexer": "synthetic dense example"
+  },
+  "metrics": {
+    "recallAt5": 0.5,
+    "answerSuccessRate": 0.5,
+    "p50LatencyMs": 100
+  },
+  "cases": [
+    {
+      "caseKey": "fact-01",
+      "category": "FACT",
+      "split": "DEV",
+      "recalled": true,
+      "citationHit": true,
+      "success": true,
+      "latencyMs": 100
+    }
+  ]
+}

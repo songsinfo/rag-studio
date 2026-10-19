@@ -1,0 +1,62 @@
+# Local configuration and runtime state
+.env
+.env.*
+!.env.example
+.runtime/
+.worktrees/
+.local/
+.scratch/
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+pytest-cache-files-*/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+backend/milvus_test.db/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Build and process output
+backend/target/
+*.log
+*.pid
+
+# Locally generated evaluation fixtures
+datasets/eval_accelerator_300.jsonl
+datasets/eval_mall_300.jsonl
+scripts/build_eval_accelerator_300.py
+scripts/build_eval_mall_300.py
+scripts/eval_gen/
+
+# Local analysis, uploads, private exports and generated reports
+.ua/
+core_review.txt
+uploads/
+backups/
+reports/
+artifacts/*
+!artifacts/baseline-report.json
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.pem
+*.key
+*.p12
+*.pfx

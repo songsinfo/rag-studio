@@ -1,0 +1,28 @@
+title = "RAG Studio secret scanning"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Authored synthetic case identifiers, not credentials"
+condition = "AND"
+paths = ['''(^|/)datasets/eobs_assertion_candidates_30\.jsonl$''']
+regexTarget = "secret"
+regexes = ['''^eobs-(valid_refusal|wrong_refusal)-[1-3]$''']
+
+[[rules.allowlists]]
+description = "Synthetic document unit identifier used by a regression fixture"
+condition = "AND"
+paths = ['''(^|/)backend/regressions/ingestion/test_review\.py$''']
+regexTarget = "secret"
+regexes = ['''^docling_chunk_0$''']
+
+[[rules.allowlists]]
+description = "Deliberately fake API-key input tests the secret-input rejection path"
+condition = "AND"
+paths = ['''(^|/)backend/tests/test_qa\.py$''']
+regexTarget = "secret"
+regexes = ['''^abcdefgh12345678$''']

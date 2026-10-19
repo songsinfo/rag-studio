@@ -1,0 +1,50 @@
+[
+  {
+    "id": "B0",
+    "name": "ablation-b0-bm25",
+    "payload": {
+      "query": { "rewrite": false, "hyde": false, "multiQuery": false, "maxVariants": 1 },
+      "retrieval": { "mode": "BM25", "representations": ["ORIGINAL"], "perRouteK": 50, "numCandidates": 200 },
+      "fusion": { "rrfK": 60 },
+      "post": { "rerank": false, "rerankTopN": 30, "allowRerankFallback": false, "mmr": false, "parent": false },
+      "context": { "maxTokens": 6000, "maxUnits": 6 },
+      "answer": { "strict": true }
+    }
+  },
+  {
+    "id": "B1",
+    "name": "ablation-b1-dense",
+    "payload": {
+      "query": { "rewrite": false, "hyde": false, "multiQuery": false, "maxVariants": 1 },
+      "retrieval": { "mode": "DENSE", "representations": ["ORIGINAL"], "perRouteK": 50, "numCandidates": 200 },
+      "fusion": { "rrfK": 60 },
+      "post": { "rerank": false, "rerankTopN": 30, "allowRerankFallback": false, "mmr": false, "parent": false },
+      "context": { "maxTokens": 6000, "maxUnits": 6 },
+      "answer": { "strict": true }
+    }
+  },
+  {
+    "id": "B2",
+    "name": "ablation-b2-hybrid-rrf",
+    "payload": {
+      "query": { "rewrite": false, "hyde": false, "multiQuery": false, "maxVariants": 1 },
+      "retrieval": { "mode": "HYBRID", "representations": ["ORIGINAL"], "perRouteK": 50, "numCandidates": 200 },
+      "fusion": { "rrfK": 60 },
+      "post": { "rerank": false, "rerankTopN": 30, "allowRerankFallback": false, "mmr": false, "parent": false },
+      "context": { "maxTokens": 6000, "maxUnits": 6 },
+      "answer": { "strict": true }
+    }
+  },
+  {
+    "id": "B3",
+    "name": "ablation-b3-hybrid-rrf-reranker",
+    "payload": {
+      "query": { "rewrite": false, "hyde": false, "multiQuery": false, "maxVariants": 1 },
+      "retrieval": { "mode": "HYBRID", "representations": ["ORIGINAL"], "perRouteK": 50, "numCandidates": 200 },
+      "fusion": { "rrfK": 60 },
+      "post": { "rerank": true, "rerankTopN": 30, "allowRerankFallback": false, "mmr": false, "parent": false },
+      "context": { "maxTokens": 6000, "maxUnits": 6 },
+      "answer": { "strict": true }
+    }
+  }
+]

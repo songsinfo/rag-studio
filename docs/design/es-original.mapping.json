@@ -1,0 +1,43 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "dynamic": "strict",
+    "properties": {
+      "tenant_id": {
+        "type": "keyword"
+      },
+      "kb_id": {
+        "type": "keyword"
+      },
+      "document_id": {
+        "type": "keyword"
+      },
+      "version_id": {
+        "type": "keyword"
+      },
+      "build_id": {
+        "type": "keyword"
+      },
+      "canonical_chunk_id": {
+        "type": "keyword"
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "cjk"
+      },
+      "text": {
+        "type": "text",
+        "analyzer": "cjk"
+      },
+      "code_terms": {
+        "type": "keyword"
+      },
+      "content_hash": {
+        "type": "keyword"
+      }
+    }
+  }
+}

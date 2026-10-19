@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  quickstart:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m unittest discover -s tests -p 'test_quickstart.py' -v
+      - run: python -m unittest discover -s tests -p 'test_python_tooling.py' -v
+      - run: python -m compileall -q scripts
+      - run: python scripts/integration.py --self-test
+      - run: python scripts/acceptance.py backend --self-test
+      - run: python scripts/acceptance.py gateway --self-test
+      - run: python scripts/evaluation.py ablation --self-test
+      - run: python scripts/quickstart.py init
+      - name: Validate generated config and Compose
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.runtime/demo.env')
+          text=p.read_text()
+          replacements={
+            'MODEL_BASE_URL=': 'MODEL_BASE_URL=https://example.invalid/v1',
+            'MODEL_API_KEY=': 'MODEL_API_KEY=synthetic-key-for-compose-validation',
+            'CHAT_MODEL=': 'CHAT_MODEL=synthetic-chat',
+            'EMBEDDING_MODEL=': 'EMBEDDING_MODEL=synthetic-embedding',
+            'JUDGE_MODEL=': 'JUDGE_MODEL=synthetic-judge',
+          }
+          for old, new in replacements.items():
+            text='\n'.join(new if line == old else line for line in text.split('\n'))
+          p.write_text(text)
+          PY
+          python scripts/quickstart.py config
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - run: python -m compileall -q app tests
+      - name: Export compiled RAG LangGraph diagram
+        run: python scripts/export_rag_retrieval_graph.py --print
+      - run: python -m pytest -q
+      - name: Offline security and lifecycle regressions
+        env:
+          REVIEW_ROOT: ${{ github.workspace }}
+        run: python -m pytest regressions -q -p no:cacheprovider --tb=short
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+
+
+  mysql-schema:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: rootpass
+          MYSQL_DATABASE: rag_demo
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -prootpass"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Apply production MySQL schema
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y default-mysql-client
+          mysql -h127.0.0.1 -P3306 -uroot -prootpass rag_demo < ../docs/design/schema.sql
+      - name: Verify SQLAlchemy/MySQL schema contract
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: "3306"
+          DB_USER: root
+          DB_PASSWORD: rootpass
+          DB_NAME: rag_demo
+        run: |
+          python - <<'PY'
+          from sqlalchemy import inspect
+          from app.db import engine
+          from app.models import index_build_table, model_call_table
+
+          inspector = inspect(engine)
+          for table in (index_build_table, model_call_table):
+              actual = {column["name"]: column for column in inspector.get_columns(table.name)}
+              missing = set(table.c.keys()) - set(actual)
+              assert not missing, f"{table.name} missing columns: {sorted(missing)}"
+              for column in table.c:
+                  assert actual[column.name]["nullable"] == column.nullable, (
+                      f"{table.name}.{column.name} nullable drift: "
+                      f"MySQL={actual[column.name]['nullable']} metadata={column.nullable}"
+                  )
+
+          checks = " ".join(
+              (item.get("sqltext") or "")
+              for item in inspector.get_check_constraints("model_call")
+          ).lower().replace("`", "")
+          assert "run_id is null" in checks and "job_id is null" in checks, checks
+          PY

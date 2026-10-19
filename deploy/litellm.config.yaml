@@ -1,0 +1,33 @@
+model_list:
+  - model_name: chat-main
+    litellm_params:
+      model: os.environ/LITELLM_CHAT_TARGET
+      api_base: os.environ/MODEL_BASE_URL
+      api_key: os.environ/MODEL_API_KEY
+      extra_body:
+        enable_thinking: false
+  - model_name: embedding-main
+    litellm_params:
+      model: os.environ/LITELLM_EMBEDDING_TARGET
+      api_base: os.environ/MODEL_BASE_URL
+      api_key: os.environ/MODEL_API_KEY
+  - model_name: judge-main
+    litellm_params:
+      model: os.environ/LITELLM_JUDGE_TARGET
+      api_base: os.environ/MODEL_BASE_URL
+      api_key: os.environ/MODEL_API_KEY
+  - model_name: rerank-main
+    litellm_params:
+      model: os.environ/LITELLM_RERANK_TARGET
+      api_base: os.environ/MODEL_BASE_URL
+      api_key: os.environ/MODEL_API_KEY
+
+litellm_settings:
+  num_retries: 2
+  request_timeout: 60
+  telemetry: false
+  set_verbose: false
+  drop_params: true
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
